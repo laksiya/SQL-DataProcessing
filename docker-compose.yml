@@ -1,0 +1,69 @@
+# Use postgres/example user/password credentials
+version: '3.8'
+
+services:
+  notebook:
+    container_name: notebook_container
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    environment:
+      GRANT_SUDO: "yes"
+    ports:
+      - "8888:8888"
+    volumes:
+      - ./notebooks:/home/jovyan/work
+  db:
+    container_name: pg_container
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: root
+    ports:
+      - "5432:5432"
+    volumes:
+       - ./data/postgresql:/var/lib/postgresql/data
+  pgadmin:
+    container_name: pgadmin4_container
+    image: dpage/pgadmin4
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: root
+    ports:
+      - "5050:80"
+    volumes:
+      - ./data/pgadmin:/var/lib/pgadmin
+ 
+# Intro: 
+# Work with docker daily but in a different setup. 
+# Set up bash script to install and run the Dockerfiles with desired docker options. Purpose: running customized entrypoints with tmux terminals
+# Could be other ways to add tmux terminals but that how they did it before and since it works its been the main method we use
+# Played a bit around with Jupyter in Annaconda during studies but havent looked at lately
+
+# How I solved it?
+# postgres and pgadmin4
+# Looked into some code I now that previosly used docker compose to get a feeling
+# Started with looking into how to setup postgres with docker, found some resources to start
+# Looked into resources for running pgadmin4 in container and found resources that covered both details
+# Encountered isssues with connectin pgadmin4 with password credential issues
+# Solved this by looking up resources for what could cause this and tested specifying the default postgres user as postgres instead of defining using user as root
+# It worked and for this assignment using the default user isnt risky, otherwise I would spend some time making a unique user work
+
+# jupyter
+# Started looking into different jupyter docker images and found jupyter/minimal-notebook suitable to start out with
+# Tried setting it up in docker compose with port 8888, seemed to work
+# To install requirements I replaced image with Dockerfile from image and install requirements
+# could access the jupyter lab from given URL - cool
+# found this resource on how to make jupyter and postgres interract and tested the script to test connection
+
+# Currently this work wont be save so looked into ways to mount volumes such that pgadmin cionfigs, postregs db data and notebooks persists
+# solved some errors with pgadmin volume: https://stackoverflow.com/questions/64781245/permission-denied-var-lib-pgadmin-sessions-in-docker
+# chown could be risky but since these folders dont serve anyt other purpose I will try it
+# tested running docker-compose from scratch and pgadmin persists. Repeated the prosesd for jupyter and with some debugging it worked too.
+# Demonstrate that you can connect to the database from a jupyter notebook: found resources on how to demonstrate in jupyter
+# https://github.com/svolodarskyi/docker_turtorial
+
+# docker-compose up --build to build

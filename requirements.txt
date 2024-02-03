@@ -1,0 +1,7 @@
+pandas
+matplotlib
+sqlalchemy
+psycopg2-binary
+faker
+faker-music
+open3d
